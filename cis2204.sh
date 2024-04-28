@@ -566,10 +566,8 @@ function update_grub() {
 
 NO=1.1.1.1;   W=1; S=1; E=; SC=;  BD='Ensure mounting of cramfs filesystems is disabled'
 lev && (update_modprobe cramfs) 
-
 NO=1.1.1.2;   W=2; S=2; E=; SC=Y; BD='Ensure mounting of squashfs filesystems is disabled' #check
 lev && (update_modprobe squashfs)
-
 NO=1.1.1.3;   W=1; S=1; E=; SC=;  BD='Ensure mounting of udf filesystems is limited'
 lev && (update_modprobe udf)
 
@@ -585,31 +583,46 @@ lev && (
         upd && systemctl --now enable tmp.mount
     fi
 ) 
-
 NO=1.1.2.2;     W=1; S=1; E=; SC=;  BD='Ensure nodev option set on /tmp partition'
 #change to systemd tmpfs
 lev && (update_fstab /tmp 'defaults,nodev,nosuid,noexec')
-
 NO=1.1.2.3;     W=1; S=1; E=; SC=;  BD='Ensure noexec option set on /tmp partition'
 lev  # Updated in 1.1.2.2
-
 NO=1.1.2.4;     W=1; S=1; E=; SC=;  BD='Ensure nosuid option set on /tmp partition'
 lev  # Updated in 1.1.2.2
 
 NO=1.1.3.1;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var'
 lev && (check_fstab /var)
+# NO=1.1.3.2
+# NO=1.1.3.3 #check
 
+NO=1.1.4.1;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var/tmp'
+lev && (check_fstab /var/tmp)
+NO=1.1.4.2;    W=2; S=2; E=; SC=;  BD='Ensure noexec option set on /var/tmp partition'
+lev  # Updated in 1.1.12
+NO=1.1.4.3;    W=2; S=2; E=; SC=;  BD='Ensure nosuid option set on /var/tmp partition'
+lev  # Updated in 1.1.12
+NO=1.1.4.4;    W=2; S=2; E=; SC=;  BD='Ensure nodev option set on /var/tmp partition'
+lev && (update_fstab /var/tmp 'defaults,nodev,nosuid,noexec')
 
+NO=1.1.5.1;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var/log'
+lev && (check_fstab /var/log) 
+# NO=1.1.5.2
+# NO=1.1.5.3
+# NO=1.1.5.4 #check
 
+NO=1.1.6.1;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var/log/audit'
+lev && (check_fstab /var/log/audit)
+# NO=1.1.6.2
+# NO=1.1.6.3
+# NO=1.1.6.4 #check
 
-
-
-
-
-
-
-
-
+NO=1.1.7.1;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /home'
+lev && (check_fstab /home)
+NO=1.1.7.2;    W=1; S=1; E=; SC=;  BD='Ensure nodev option set on /home partition'
+lev && (update_fstab /home 'defaults,nodev')
+NO=1.1.7.3;    W=1; S=1; E=; SC=N; BD='Ensure nodev option set on removable media partitions'
+lev && (update_fstab /dev/cdrom 'defaults,nodev,nosuid,noexec')
 
 NO=1.1.8;     W=1; S=1; E=; SC=;  BD='Ensure /dev/shm is configured'
 lev && (
@@ -628,13 +641,10 @@ lev && (
         *)    prw "No /dev/shm mounted. Check system." ;;
     esac
 )
-
 NO=1.1.8.1;     W=1; S=1; E=; SC=;  BD='Ensure nodev option set on /dev/shm partition'
 lev  # Updated in 1.1.8
-
 NO=1.1.8.2;     W=1; S=1; E=; SC=;  BD='Ensure noexec option set on /dev/shm partition'
 lev  # Updated in 1.1.8
-
 NO=1.1.8.3;     W=1; S=1; E=; SC=;  BD='Ensure nosuid option set on /dev/shm partition'
 lev  # Updated in 1.1.8
 
@@ -643,54 +653,6 @@ lev && (remove_package autofs) || systemctl stop autofs && systemctl mask autofs
 
 NO=1.1.10;    W=2; S=1; E=; SC=;  BD='Disable USB Storage'
 lev && (update_modprobe usb_storage)
-
-
-
-
-NO=1.1.11;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var/tmp'
-lev && (check_fstab /var/tmp)
-
-NO=1.1.12;    W=2; S=2; E=; SC=;  BD='Ensure nodev option set on /var/tmp partition'
-lev && (update_fstab /var/tmp 'defaults,nodev,nosuid,noexec')
-
-NO=1.1.13;    W=2; S=2; E=; SC=;  BD='Ensure nosuid option set on /var/tmp partition'
-lev  # Updated in 1.1.12
-
-NO=1.1.14;    W=2; S=2; E=; SC=;  BD='Ensure noexec option set on /var/tmp partition'
-lev  # Updated in 1.1.12
-
-NO=1.1.15;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var/log'
-lev && (check_fstab /var/log) 
-
-NO=1.1.16;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /var/log/audit'
-lev && (check_fstab /var/log/audit)
-
-NO=1.1.17;    W=2; S=2; E=; SC=;  BD='Ensure separate partition exists for /home'
-lev && (check_fstab /home)
- 
-NO=1.1.18;    W=1; S=1; E=; SC=;  BD='Ensure nodev option set on /home partition'
-lev && (update_fstab /home 'defaults,nodev')
-
-NO=1.1.19;    W=1; S=1; E=; SC=N; BD='Ensure nodev option set on removable media partitions'
-lev && (update_fstab /dev/cdrom 'defaults,nodev,nosuid,noexec')
-
-NO=1.1.20;    W=1; S=1; E=; SC=N; BD='Ensure nosuid option set on removable media partitions'
-lev  # Updated in 1.1.19
-
-NO=1.1.21;    W=1; S=1; E=; SC=N; BD='Ensure noexec option set on removable media partitions'
-lev  # Updated in 1.1.19
-
-NO=1.1.22;    W=1; S=1; E=; SC=N; BD='Ensure sticky bit is set on all world-writable directories'
-lev && (
-    df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | grep -q "/"
-    (($? == 0)) && {
-        upd  || prw "Some world-writable folders do not have sticky bit set. This needs to be fixed"
-        upd  && prw "Some world-writable folders do not have sticky bit set. Updating!"
-        upd  && df --local -P | awk '{if (NR!=1) print $6}' | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | xargs -I '{}' chmod a+t '{}'
-    }
-    err  || prn "All world-writable folders have their sticky bit set"
-)
-
 
 NO=1.2.1;     W=1; S=1; E=; SC=N; BD='Ensure package manager repositories are configured'
 lev && (
@@ -719,6 +681,31 @@ lev && (
             ) ;;
     esac
 )
+
+
+
+
+
+
+NO=1.1.20;    W=1; S=1; E=; SC=N; BD='Ensure nosuid option set on removable media partitions'
+lev  # Updated in 1.1.19
+
+NO=1.1.21;    W=1; S=1; E=; SC=N; BD='Ensure noexec option set on removable media partitions'
+lev  # Updated in 1.1.19
+
+NO=1.1.22;    W=1; S=1; E=; SC=N; BD='Ensure sticky bit is set on all world-writable directories'
+lev && (
+    df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | grep -q "/"
+    (($? == 0)) && {
+        upd  || prw "Some world-writable folders do not have sticky bit set. This needs to be fixed"
+        upd  && prw "Some world-writable folders do not have sticky bit set. Updating!"
+        upd  && df --local -P | awk '{if (NR!=1) print $6}' | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | xargs -I '{}' chmod a+t '{}'
+    }
+    err  || prn "All world-writable folders have their sticky bit set"
+)
+
+
+
 
 NO=1.3.1;     W=1; S=1; E=; SC=;  BD='Ensure AIDE is installed'
 lev && (
