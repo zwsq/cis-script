@@ -682,31 +682,6 @@ lev && (
     esac
 )
 
-
-
-
-
-
-NO=1.1.20;    W=1; S=1; E=; SC=N; BD='Ensure nosuid option set on removable media partitions'
-lev  # Updated in 1.1.19
-
-NO=1.1.21;    W=1; S=1; E=; SC=N; BD='Ensure noexec option set on removable media partitions'
-lev  # Updated in 1.1.19
-
-NO=1.1.22;    W=1; S=1; E=; SC=N; BD='Ensure sticky bit is set on all world-writable directories'
-lev && (
-    df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | grep -q "/"
-    (($? == 0)) && {
-        upd  || prw "Some world-writable folders do not have sticky bit set. This needs to be fixed"
-        upd  && prw "Some world-writable folders do not have sticky bit set. Updating!"
-        upd  && df --local -P | awk '{if (NR!=1) print $6}' | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | xargs -I '{}' chmod a+t '{}'
-    }
-    err  || prn "All world-writable folders have their sticky bit set"
-)
-
-
-
-
 NO=1.3.1;     W=1; S=1; E=; SC=;  BD='Ensure AIDE is installed'
 lev && (
     install_package aide
@@ -727,22 +702,7 @@ lev && (
     fi
 )
 
-NO=1.4.1;     W=1; S=1; E=; SC=;  BD='Ensure permissions on bootloader config are not overridden'
-lev && (
-    if (grep -E '^\s*chmod\s+444\s+\$\{grub_cfg\}\.new' -A 1 -B1 /usr/sbin/grub-mkconfig >/dev/null)
-    then
-        upd && (
-            prw "Updating permissions settings in /usr/sbin/grub-mkconfig."
-            sed -ri 's/chmod\s+[0-7][0-7][0-7]\s+\$\{grub_cfg\}\.new/chmod 400 ${grub_cfg}.new/' /usr/sbin/grub-mkconfig
-            sed -ri 's/ && ! grep "\^password" \$\{grub_cfg\}.new >\/dev\/null//' /usr/sbin/grub-mkconfig
-        )
-        upd || (prw "Permissions settings in /usr/sbin/grub-mkconfig need to be changed to 400.")
-    else
-        prn "Permissions settings in /usr/sbin/grub-mkconfig have already been set."
-    fi
-)
-
-NO=1.4.2;     W=1; S=1; E=; SC=;  BD='Ensure bootloader password is set'
+NO=1.4.1;     W=1; S=1; E=; SC=;  BD='Ensure bootloader password is set'
 lev && [[ $GRP ]] && (
     update_conf /etc/grub.d/10_linux 'CLASS="--class gnu-linux --class gnu --class os' 'CLASS="--class gnu-linux --class gnu --class os --unrestricted"'
     update_grub
@@ -762,10 +722,22 @@ lev && [[ $GRP ]] && (
     )
 )
 
-NO=1.4.3;     W=1; S=1; E=; SC=;  BD='Ensure permissions on bootloader config are configured'
-lev && (update_grub)
+NO=1.4.2;     W=1; S=1; E=; SC=;  BD='Ensure permissions on bootloader config are configured'
+lev && (
+    if (grep -E '^\s*chmod\s+444\s+\$\{grub_cfg\}\.new' -A 1 -B1 /usr/sbin/grub-mkconfig >/dev/null)
+    then
+        upd && (
+            prw "Updating permissions settings in /usr/sbin/grub-mkconfig."
+            sed -ri 's/chmod\s+[0-7][0-7][0-7]\s+\$\{grub_cfg\}\.new/chmod 400 ${grub_cfg}.new/' /usr/sbin/grub-mkconfig
+            sed -ri 's/ && ! grep "\^password" \$\{grub_cfg\}.new >\/dev\/null//' /usr/sbin/grub-mkconfig
+        )
+        upd || (prw "Permissions settings in /usr/sbin/grub-mkconfig need to be changed to 400.")
+    else
+        prn "Permissions settings in /usr/sbin/grub-mkconfig have already been set."
+    fi
+) && (update_grub)
 
-NO=1.4.4;     W=1; S=1; E=; SC=;  BD='Ensure authentication required for single user mode'
+NO=1.4.3;     W=1; S=1; E=; SC=;  BD='Ensure authentication required for single user mode'
 lev && (
     grep -q "^root:[*\!]:" /etc/shadow
     case  $? in
@@ -776,18 +748,13 @@ lev && (
     err         || prn "Root password is already set."
 )
 
-NO=1.5.1;     W=1; S=1; E=; SC=N; BD='Ensure XD/NX support is enabled'
-lev && (
-    journalctl  |  grep -q "protection: active"
-    (($? != 0)) && prw "NX is not active. Check kernel."
-    err         || prn "NX is active."
-)
-
-NO=1.5.2;     W=1; S=1; E=; SC=;  BD='Ensure address space layout randomization (ASLR) is enabled'
+NO=1.5.1;     W=1; S=1; E=; SC=;  BD='Ensure address space layout randomization (ASLR) is enabled'
 lev && (update_conf /etc/sysctl.d/local.conf 'kernel.randomize_va_space' 'kernel.randomize_va_space = 2')
 
-NO=1.5.3;     W=1; S=1; E=; SC=;  BD='Ensure prelink is not installed'
+NO=1.5.2;     W=1; S=1; E=; SC=;  BD='Ensure prelink is not installed'
 lev && (remove_package prelink)
+
+# NO=1.5.3;     W=1; S=1; E=; SC=;  BD='Ensure Automatic Error Reporting is not enabled' #check
 
 NO=1.5.4;     W=1; S=1; E=; SC=;  BD='Ensure core dumps are restricted'
 lev && (
@@ -869,7 +836,19 @@ lev && (
     fi
 )
 
-NO=1.8.4;     W=1; S=1; E=; SC=;  BD='Ensure XDCMP is not enabled'
+# NO=1.8.4;
+
+# NO=1.8.5;
+
+# NO=1.8.6;
+
+# NO=1.8.7;
+
+# NO=1.8.8;
+
+# NO=1.8.9;
+
+NO=1.8.10;     W=1; S=1; E=; SC=;  BD='Ensure XDCMP is not enabled'
 lev && (
     if [[ -s /etc/gdm3/custom.conf ]]; then
         update_conf /etc/gdm3/custom.conf 'enable=true' '#enable=true'
@@ -890,10 +869,11 @@ lev && (
     esac
 )
 
-NO=2.1.1.1;   W=1; S=1; E=; SC=;  BD='Ensure time synchronization is in use'
+NO=2.1.1.1;   W=1; S=1; E=; SC=;  BD='Ensure a single time synchronization daemon is in use'
 lev && (
     case ${NT} in
-        systemd) remove_package    ntp 
+        systemd) remove_package  
+          ntp 
                  remove_package    chrony 
                  upd && systemctl enable  systemd-timesyncd.service
                  upd && systemctl start   systemd-timesyncd.service ;;
